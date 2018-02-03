@@ -1,0 +1,99 @@
+---
+# defaults file for openstack-bootstrap
+
+openstack_bootstrap_specs:
+  - name: instance-name-01
+    ansible:
+      inventory_groups:
+        - group_name
+      ssh_user: "ssh_user_name"
+      ssh_key: "~/.ssh/your_private_key_file"
+    os_auth:
+      auth_url: "https://openstack-auth-url-dc-1"
+      username: "your-name"
+      password: "your-password"
+      project_name: "your-project-01"
+    os_server:
+      key_name: "your-openstack-key-name"
+      availability_zone: zone-a
+      flavor: m1.large
+      image: image-name-or-id
+      security_groups:
+        - security-group-name
+      nics:
+        - net-id: network-id
+    volumes:
+      - os_volume:
+          display_name: volume-name-01-01
+          volume_type: ceph
+          size: 200
+          availability_zone: nova
+        os_server_volume:
+          device: /dev/vdb
+        mount:
+          fstype: ext4
+          path: /path/mount/01
+      - os_volume:
+          display_name: volume-name-01-02
+          volume_type: ceph
+          size: 200
+          availability_zone: nova
+        os_server_volume:
+          device: /dev/vdc
+        mount:
+          fstype: ext4
+          path: /path/mount/02
+  - name: instance-name-02
+    ansible_groups:
+      - group_name
+    ssh_user: "ssh_user_name"
+    os_auth:
+      auth_url: "https://openstack-auth-url-dc2"
+      username: "your-name"
+      password: "your-password"
+      project_name: "your-project-02"
+      key: "~/.ssh/your_private_key_file"
+    os_server:
+      key_name: "your-openstack-key-name"
+      availability_zone: zone-a
+      flavor: m1.large
+      image: image-name-or-id
+      security_groups:
+        - security-group-name
+      nics:
+        - net-id: network-id
+    volumes:
+      - os_volume:
+          display_name: volume-name-02-01
+          volume_type: ceph
+          size: 200
+          availability_zone: nova
+        os_server_volume:
+          auth:
+            auth_url: "this-will-be-overwritten"
+            username: "this-will-be-overwritten"
+            password: "this-will-be-overwritten"
+            project_name: "this-will-be-overwritten"
+          server: "this-will-be-overwritten"
+          volume: "this-will-be-overwritten"
+          device: /dev/vdb
+        mount:
+          fstype: ext4
+          path: /path/mount/01
+      - os_volume:
+          display_name: volume-name-02-02
+          volume_type: ceph
+          size: 200
+          availability_zone: nova
+        os_server_volume:
+          auth:
+            auth_url: "this-will-be-overwritten"
+            username: "this-will-be-overwritten"
+            password: "this-will-be-overwritten"
+            project_name: "this-will-be-overwritten"
+          server: "this-will-be-overwritten"
+          volume: "this-will-be-overwritten"
+          device: /dev/vdc
+        mount:
+          fstype: ext4
+          path: /path/mount/02

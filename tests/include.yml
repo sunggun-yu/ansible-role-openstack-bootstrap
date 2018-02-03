@@ -1,0 +1,69 @@
+---
+
+- name: Generate `os_server` variable
+  debug:
+    msg: "{{ openstack_bootstrap_spec.os_server | combine( os_server_item ) }}"
+  vars:
+    os_server_item:
+      auth: "{{ openstack_bootstrap_spec.os_auth }}"
+      name: "{{ openstack_bootstrap_spec.name }}"
+      state: present
+
+
+- name: Generate `os_volume` variable
+  debug:
+    msg: "{{ item.os_volume | combine( os_volume_item ) }}"
+  vars:
+    os_volume_item:
+      auth: "{{ openstack_bootstrap_spec.os_auth }}"
+      state: present
+  with_items:
+    - "{{ openstack_bootstrap_spec.volumes }}"
+
+
+- name: Generate `os_server_volume` variable
+  debug:
+    msg: "{{ item.os_server_volume | combine( os_server_volume_item ) }}"
+  vars:
+    os_server_volume_item:
+      server: "{{ openstack_bootstrap_spec.name }}"
+      volume: "{{ item.os_volume.display_name }}"
+      auth: "{{ openstack_bootstrap_spec.os_auth }}"
+      state: present
+  with_items:
+    - "{{ openstack_bootstrap_spec.volumes }}"
+
+
+- name: Generate `file` variable
+  debug:
+    msg: "{{ file_item }}"
+  vars:
+    file_item:
+      path: "{{ item.mount.path }}"
+      state: directory
+  with_items:
+    - "{{ openstack_bootstrap_spec.volumes }}"
+
+
+- name: Generate `filesystem` variable
+  debug:
+    msg: "{{ filesystem_item }}"
+  vars:
+    filesystem_item:
+      fstype: "{{ item.mount.fstype }}"
+      dev: "{{ item.os_server_volume.device }}"
+  with_items:
+    - "{{ openstack_bootstrap_spec.volumes }}"
+
+
+- name: Generate `mount` variable
+  debug:
+    msg: "{{ mount_item }}"
+  vars:
+    mount_item:
+      path: "{{ item.mount.path }}"
+      fstype: "{{ item.mount.fstype }}"
+      src: "{{ item.os_server_volume.device }}"
+      state: mounted
+  with_items:
+    - "{{ openstack_bootstrap_spec.volumes }}"

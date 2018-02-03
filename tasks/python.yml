@@ -1,0 +1,6 @@
+---
+
+# Temporary implementation for Ubuntu 16.04
+- name: "Ensure Python is installed in remote host"
+  raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+  changed_when: False

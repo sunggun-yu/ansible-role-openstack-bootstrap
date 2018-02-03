@@ -1,0 +1,179 @@
+---
+
+# ----------------------------------------------------------------------------------------------------------------------
+#  Create OpenStack server instance
+# ----------------------------------------------------------------------------------------------------------------------
+- name: "Ensure compute instance {{ openstack_bootstrap_spec.name }} is created"
+  os_server: "{{ openstack_bootstrap_spec.os_server | combine( os_server_item ) }}"
+  delegate_to: localhost
+  vars:
+    os_server_item:
+      auth: "{{ openstack_bootstrap_spec.os_auth }}"
+      name: "{{ openstack_bootstrap_spec.name }}"
+      state: present
+  register: reg_provision_server
+  tags:
+    - create-server
+
+- name: debug
+  debug: var=reg_provision_server
+  tags:
+    - create-server
+  when: reg_provision_server is defined
+  changed_when: False
+
+# ----------------------------------------------------------------------------------------------------------------------
+#  Generate Ansible in-memory inventory
+# ----------------------------------------------------------------------------------------------------------------------
+- name: "Ensure server instance {{ openstack_bootstrap_spec.name }} is in Ansible in-memory inventory"
+  add_host:
+    hostname: "{{ reg_provision_server.server.name }}"
+    ansible_host: "{{ reg_provision_server.server.private_v4 }}"
+    ansible_user: "{{ openstack_bootstrap_spec.ansible.ssh_user }}"
+    ansible_ssh_private_key_file: "{{ openstack_bootstrap_spec.ansible.ssh_key }}"
+    groups: "{{ openstack_bootstrap_spec.ansible.inventory_groups | default(omit) }}"
+  register: mem_inventory
+  tags:
+    - create-server
+  when: reg_provision_server is defined
+  changed_when: False
+
+- debug: var=mem_inventory
+  tags:
+    - create-server
+  when: mem_inventory is defined
+  changed_when: False
+
+# ----------------------------------------------------------------------------------------------------------------------
+#  Create OpenStack volumes
+# ----------------------------------------------------------------------------------------------------------------------
+- name: "Ensure volume is created"
+  os_volume: "{{ item.os_volume | combine( os_volume_item ) }}"
+  delegate_to: localhost
+  vars:
+    os_volume_item:
+      auth: "{{ openstack_bootstrap_spec.os_auth }}"
+      state: present
+  with_items: "{{ openstack_bootstrap_spec.volumes }}"
+  when: openstack_bootstrap_spec.volumes is defined
+  tags:
+    - create-volume
+
+# ----------------------------------------------------------------------------------------------------------------------
+#  Attach volumes to server instance
+# ----------------------------------------------------------------------------------------------------------------------
+- name: "Ensure volume is attached to server {{ openstack_bootstrap_spec.name }}"
+  os_server_volume: "{{ item.os_server_volume | combine( os_server_volume_item ) }}"
+  delegate_to: localhost
+  vars:
+    os_server_volume_item:
+      server: "{{ openstack_bootstrap_spec.name }}"
+      volume: "{{ item.os_volume.display_name }}"
+      auth: "{{ openstack_bootstrap_spec.os_auth }}"
+      state: present
+  with_items: "{{ openstack_bootstrap_spec.volumes }}"
+  when: openstack_bootstrap_spec.volumes is defined
+  tags:
+    - attach-volume
+
+# ----------------------------------------------------------------------------------------------------------------------
+#  Ensure remote host SSH is available
+# ----------------------------------------------------------------------------------------------------------------------
+- name: "Wait for SSH banners : localhost -> {{ openstack_bootstrap_spec.name }}"
+  become: False
+  local_action:
+    module: wait_for
+    port: 22
+    host: "{{ hostvars[openstack_bootstrap_spec.name].ansible_host }}"
+    search_regex: OpenSSH
+    delay: 5
+
+# ----------------------------------------------------------------------------------------------------------------------
+#  Install Python
+# ----------------------------------------------------------------------------------------------------------------------
+- name: "Ensure Python is installed in remote host"
+  delegate_to: "{{ openstack_bootstrap_spec.name }}"
+  become: yes
+  become_method: sudo
+  retries: 1
+  delay: 5
+  include: "python.yml"
+
+# ----------------------------------------------------------------------------------------------------------------------
+#  Create mount point directory : delegate to actual server instance
+# ----------------------------------------------------------------------------------------------------------------------
+- name: "Ensure the mount point directory : {{ openstack_bootstrap_spec.name }}"
+  file: "{{ file_item }}"
+  delegate_to: "{{ openstack_bootstrap_spec.name }}"
+  become: yes
+  become_method: sudo
+  vars:
+    file_item:
+      path: "{{ item.mount.path }}"
+      state: directory
+  with_items:
+    - "{{ openstack_bootstrap_spec.volumes }}"
+  when:
+    - openstack_bootstrap_spec.volumes is defined
+  tags:
+    - mount-volume
+
+# ----------------------------------------------------------------------------------------------------------------------
+#  Create file system for attached volume : delegate to actual server instance
+# ----------------------------------------------------------------------------------------------------------------------
+- name: "Ensure filesystem of data volume : {{ openstack_bootstrap_spec.name }}"
+  filesystem: "{{ filesystem_item }}"
+  delegate_to: "{{ openstack_bootstrap_spec.name }}"
+  become: yes
+  become_method: sudo
+  vars:
+    filesystem_item:
+      fstype: "{{ item.mount.fstype }}"
+      dev: "{{ item.os_server_volume.device }}"
+  with_items:
+    - "{{ openstack_bootstrap_spec.volumes }}"
+  when:
+    - openstack_bootstrap_spec.volumes is defined
+  tags:
+    - mount-volume
+
+# ----------------------------------------------------------------------------------------------------------------------
+#  Mount the volume to given directory : delegate to actual server instance
+# ----------------------------------------------------------------------------------------------------------------------
+- name: "Ensure /etc/fstab for mount point : {{ openstack_bootstrap_spec.name }}"
+  mount: "{{ mount_item }}"
+  delegate_to: "{{ openstack_bootstrap_spec.name }}"
+  become: yes
+  become_method: sudo
+  vars:
+    mount_item:
+      path: "{{ item.mount.path }}"
+      fstype: "{{ item.mount.fstype }}"
+      src: "{{ item.os_server_volume.device }}"
+      state: mounted
+  with_items:
+    - "{{ openstack_bootstrap_spec.volumes }}"
+  when:
+    - openstack_bootstrap_spec.volumes is defined
+  tags:
+    - mount-volume
+
+- name: "Check `df -h` : {{ openstack_bootstrap_spec.name }}"
+  shell: "df -h"
+  delegate_to: "{{ openstack_bootstrap_spec.name }}"
+  become: yes
+  become_method: sudo
+  register: reg_mount_volumes_df
+  when:
+    - openstack_bootstrap_spec.volumes is defined
+  changed_when: False
+  tags:
+    - mount-volume
+
+- debug: var=reg_mount_volumes_df.stdout_lines
+  when:
+    - reg_mount_volumes_df is defined
+    - openstack_bootstrap_spec.volumes is defined
+  changed_when: False
+  tags:
+    - mount-volume

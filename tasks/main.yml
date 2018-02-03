@@ -1,0 +1,9 @@
+---
+# tasks file for openstack-bootstrap
+
+- name: "Create server instances and volumes"
+  include_tasks: provision.yml
+  with_items: "{{ openstack_bootstrap_specs }}"
+  loop_control:
+    loop_var: openstack_bootstrap_spec
+
