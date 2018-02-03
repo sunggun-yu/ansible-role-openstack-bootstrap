@@ -3,6 +3,14 @@ galaxy_info:
   description: Create OpenStack instances and volume from the spec variable. also, attach and mount the volumes to the instances.
   license: MIT
   min_ansible_version: 2.3
+  platforms:
+    - name: Ubuntu
+      versions:
+        - trusty
+        - xenial
+    - name: CentOS
+      versions:
+        - 7
   github_branch: master
   galaxy_tags:
     - openstack
