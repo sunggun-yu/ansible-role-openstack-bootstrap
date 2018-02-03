@@ -8,7 +8,7 @@ galaxy_info:
       versions:
         - trusty
         - xenial
-    - name: CentOS
+    - name: EL
       versions:
         - 7
   github_branch: master
