@@ -30,9 +30,9 @@ The role requires `openstack_bootstrap_specs` variable which contains list of di
 - `os_auth`: OpenStack auth options. this information will be used in `os_server`, `os_volume`, and `os_server_volume`. see [os_auth](http://docs.ansible.com/ansible/latest/os_auth_module.html) options for more details.
 - `os_server`: Compute instance options. the `name` option of `os_server` will be replaced to `name`. see [os_server](http://docs.ansible.com/ansible/latest/os_server_module.html) for more details. 
 - `volumes`: Volumes definition for compute instance. 
-  - `name`: Name of OpenStack volume name. it will be used as `display_name` of `os_volume` and `volume` of `os\_server_volume`.
+  - `name`: Name of OpenStack volume name. it will be used as `display_name` of `os_volume` and `volume` of `os_server_volume`.
   - `os_volume`: Volume option. see Openstack module [os_volume](http://docs.ansible.com/ansible/latest/os_volume_module.html) for more details.
-  - `os\_server_volume`: see Openstack module [os\_server_volume](http://docs.ansible.com/ansible/latest/os_server_volume_module.html) for more details.
+  - `os_server_volume`: see Openstack module [os\_server_volume](http://docs.ansible.com/ansible/latest/os_server_volume_module.html) for more details.
   - `mount`:
     - `fstype`: Filesystem type.
     - `path`: Path to the mount point.
