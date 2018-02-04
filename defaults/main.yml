@@ -23,8 +23,8 @@ openstack_bootstrap_specs:
       nics:
         - net-id: network-id
     volumes:
-      - os_volume:
-          display_name: volume-name-01-01
+      - name: volume-name-01-01
+        os_volume:
           volume_type: ceph
           size: 200
           availability_zone: nova
@@ -33,8 +33,8 @@ openstack_bootstrap_specs:
         mount:
           fstype: ext4
           path: /path/mount/01
-      - os_volume:
-          display_name: volume-name-01-02
+      - name: volume-name-01-02
+        os_volume:
           volume_type: ceph
           size: 200
           availability_zone: nova
@@ -63,8 +63,9 @@ openstack_bootstrap_specs:
       nics:
         - net-id: network-id
     volumes:
-      - os_volume:
-          display_name: volume-name-02-01
+      - name: volume-name-02-01
+        os_volume:
+          display_name: "this-will-be-overwritten"
           volume_type: ceph
           size: 200
           availability_zone: nova
@@ -80,8 +81,9 @@ openstack_bootstrap_specs:
         mount:
           fstype: ext4
           path: /path/mount/01
-      - os_volume:
-          display_name: volume-name-02-02
+      - name: volume-name-02-02
+        os_volume:
+          display_name: "this-will-be-overwritten"
           volume_type: ceph
           size: 200
           availability_zone: nova

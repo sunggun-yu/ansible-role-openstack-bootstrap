@@ -53,6 +53,7 @@
   vars:
     os_volume_item:
       auth: "{{ openstack_bootstrap_spec.os_auth }}"
+      display_name: "{{ item.name }}"
       state: present
   with_items: "{{ openstack_bootstrap_spec.volumes }}"
   when: openstack_bootstrap_spec.volumes is defined
@@ -68,7 +69,7 @@
   vars:
     os_server_volume_item:
       server: "{{ openstack_bootstrap_spec.name }}"
-      volume: "{{ item.os_volume.display_name }}"
+      volume: "{{ item.name }}"
       auth: "{{ openstack_bootstrap_spec.os_auth }}"
       state: present
   with_items: "{{ openstack_bootstrap_spec.volumes }}"
