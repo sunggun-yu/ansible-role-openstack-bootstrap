@@ -32,6 +32,7 @@
     ansible_user: "{{ openstack_bootstrap_spec.ansible.ssh_user }}"
     ansible_ssh_private_key_file: "{{ openstack_bootstrap_spec.ansible.ssh_key }}"
     groups: "{{ openstack_bootstrap_spec.ansible.inventory_groups | default(omit) }}"
+    inventory_dir: "{{ inventory_dir }}"
   register: mem_inventory
   tags:
     - create-server
