@@ -1,7 +1,7 @@
 openstack-bootstrap
 ===================
 
-Create OpenStack instances and volume. also, attach and mount the volumes to the instances.
+Create OpenStack instances and volume. and, attach and mount the volumes to the instances. It also generates the Ansible inventory file automatically as a result.
 
 Requirements
 ------------
@@ -82,6 +82,21 @@ openstack_bootstrap_specs:
           fstype: ext4
           path: /path/mount/02
 ```
+
+
+This role also generates the inventory file automatically under `inventory_dir`
+
+```yaml
+openstack_bootstrap_inventory:
+  filename: os_inventory.ini
+  force: yes
+  backup: no
+```
+
+- `filename` : The auto-generated inventory file name.
+- `force` : It will overwrites the file if it is `yes`.
+- `backup` : It will create backup file if it is `yes`.
+
 
 Dependencies
 ------------

@@ -1,6 +1,11 @@
 ---
 # defaults file for openstack-bootstrap
 
+openstack_bootstrap_inventory:
+  filename: os_inventory.ini
+  force: yes
+  backup: no
+
 openstack_bootstrap_specs:
   - name: instance-name-01
     ansible:

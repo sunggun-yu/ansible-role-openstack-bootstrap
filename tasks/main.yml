@@ -7,3 +7,5 @@
   loop_control:
     loop_var: openstack_bootstrap_spec
 
+- name: "Generate the inventory file from result of openstack_bootstrap_specs"
+  include_tasks: inventory.yml

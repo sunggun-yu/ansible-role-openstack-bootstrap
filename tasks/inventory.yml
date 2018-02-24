@@ -1,0 +1,15 @@
+---
+
+# ----------------------------------------------------------------------------------------------------------------------
+#  Generate the inventory file
+# ----------------------------------------------------------------------------------------------------------------------
+
+- name: "Generate the inventory file"
+  delegate_to: localhost
+  template:
+    src: os_inventory.ini.j2
+    dest: "{{ inventory_dir }}/{{ openstack_bootstrap_inventory.filename | default('os_inventory.ini') }}"
+    force: "{{ openstack_bootstrap_inventory.force | default(yes) }}"
+    backup: "{{ openstack_bootstrap_inventory.backup | default(no) }}"
+  tags:
+    - inventory

@@ -1,0 +1,17 @@
+# Generated inventory file by openstack-bootstrap
+
+{% for os_group_name, os_hosts in groups.iteritems() %}
+{% if 'ungrouped' != os_group_name %}
+[{{ os_group_name }}]
+{% for os_host_name in os_hosts %}
+{% if 'localhost' != os_host_name %}
+{% if 'all' == os_group_name %}
+{{ os_host_name }}								ansible_host={{ hostvars[os_host_name].ansible_host }}
+{% else %}
+{{ os_host_name }}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
