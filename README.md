@@ -97,6 +97,125 @@ openstack_bootstrap_inventory:
 - `force` : It will overwrites the file if it is `yes`.
 - `backup` : It will create backup file if it is `yes`.
 
+Also, you can generate groups of groups definition with `:children` suffix by defining `openstack_bootstrap_inventory_groups` variable.
+
+For example, You can generated following inventory file,
+
+```ini
+[all]
+k8s-master-01        ansible_host=192.168.100.11
+k8s-master-02        ansible_host=192.168.100.12
+k8s-node-01          ansible_host=192.168.100.13
+k8s-node-02          ansible_host=192.168.100.14
+k8s-node-03          ansible_host=192.168.100.15
+
+[kube-master]
+k8s-master-01
+k8s-master-02
+
+[etcd]
+k8s-master-01
+k8s-node-01
+k8s-node-02
+
+[kube-node]
+k8s-node-01
+k8s-node-02
+k8s-node-03
+
+[k8s-cluster:children]
+kube-node
+kube-master
+```
+
+with,
+
+```yaml
+openstack_bootstrap_inventory_groups:
+  k8s-cluster:
+    - kube-node
+    - kube-master
+
+openstack_bootstrap_specs:
+  - name: k8s-master-01
+    ansible:
+      inventory_groups:
+        - kube-master
+        - etcd
+        - k8s-cluster
+    ...
+  - name: k8s-master-02
+    ansible:
+      inventory_groups:
+        - kube-master
+        - k8s-cluster
+    ...
+  - name: k8s-node-01
+    ansible:
+      inventory_groups:
+        - kube-node
+        - etcd
+        - k8s-cluster
+    ...
+  - name: k8s-node-02
+    ansible:
+      inventory_groups:
+        - kube-node
+        - etcd
+        - k8s-cluster
+    ...
+  - name: k8s-node-03
+    ansible:
+      inventory_groups:
+        - kube-node
+        - k8s-cluster
+    ...
+```
+
+If `openstack_bootstrap_inventory_groups` is not defined, inventory file will be generated like,
+
+```ini
+[all]
+k8s-master-01        ansible_host=192.168.100.11
+k8s-master-02        ansible_host=192.168.100.12
+k8s-node-01          ansible_host=192.168.100.13
+k8s-node-02          ansible_host=192.168.100.14
+k8s-node-03          ansible_host=192.168.100.15
+
+[kube-master]
+k8s-master-01
+k8s-master-02
+
+[etcd]
+k8s-master-01
+k8s-node-01
+k8s-node-02
+
+[kube-node]
+k8s-node-01
+k8s-node-02
+k8s-node-03
+
+[k8s-cluster]
+k8s-master-01
+k8s-master-02
+k8s-node-01
+k8s-node-02
+k8s-node-03
+```
+
+PLEASE NOTE :
+If you omit the parent group from host inventory group from `openstack_bootstrap_specs`, it won't be applied to Ansible `in-memory` inventory even though you define parent group in `openstack_bootstrap_inventory_groups`. 
+
+```yaml
+openstack_bootstrap_specs:
+  - name: k8s-master-01
+    ansible:
+      inventory_groups:
+        - kube-master
+        - etcd
+        - k8s-cluster # <--------------- for example
+```
 
 Dependencies
 ------------

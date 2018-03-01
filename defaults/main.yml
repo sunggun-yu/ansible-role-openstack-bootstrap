@@ -6,6 +6,8 @@ openstack_bootstrap_inventory:
   force: yes
   backup: no
 
+openstack_bootstrap_inventory_groups: {}
+
 openstack_bootstrap_specs:
   - name: instance-name-01
     ansible:

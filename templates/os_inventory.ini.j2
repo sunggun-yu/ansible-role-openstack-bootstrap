@@ -1,7 +1,7 @@
 # Generated inventory file by openstack-bootstrap
 
 {% for os_group_name, os_hosts in groups.iteritems() %}
-{% if 'ungrouped' != os_group_name %}
+{% if 'ungrouped' != os_group_name and os_group_name not in openstack_bootstrap_inventory_groups %}
 [{{ os_group_name }}]
 {% for os_host_name in os_hosts %}
 {% if 'localhost' != os_host_name %}
@@ -13,5 +13,13 @@
 {% endif %}
 {% endfor %}
 {% endif %}
+
+{% endfor %}
+
+{% for parent_group_name, children_groups in openstack_bootstrap_inventory_groups.iteritems() %}
+[{{ parent_group_name }}:children]
+{% for child in children_groups %}
+{{ child }}
+{% endfor %}
 
 {% endfor %}
